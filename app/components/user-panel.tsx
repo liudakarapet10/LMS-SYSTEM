@@ -1,5 +1,6 @@
 import { User } from "@prisma/client";
-import { UserWelcome } from '~/components/user-welcome'
+import { UserWelcome } from '~/components/user-welcome';
+import { NavigationBar } from '~/components/navigationBar'
 
 
 export function UserPanel({user}: {user: User[]}) {
@@ -11,11 +12,7 @@ export function UserPanel({user}: {user: User[]}) {
     ))}
         </div>
         <div className="flex-1 overflow-y-scroll py-4 flex flex-col gap-y-10">
-          <ul>
-            <li>Профіль</li>
-            <li>Розклад</li>
-            <li>Журнал</li>
-          </ul>
+          <NavigationBar />
         </div>
         <div className="text-center p-6 bg-gray-300">
                 <form action="/logout" method="post">

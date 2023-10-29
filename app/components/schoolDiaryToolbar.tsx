@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {DropdownMenu, Option}from "./dropDowmMenu"; // Import your reusable DropdownMenu component
 
 const classesOptions: Option[] = [
@@ -8,41 +8,91 @@ const classesOptions: Option[] = [
 ];
 
 const monthsOptions: Option[] = [
-  { value: 'january', label: 'January' },
-  { value: 'february', label: 'February' },
-  { value: 'march', label: 'March' },
-  // Add more months
+  { value: 'cічень', label: 'Січень' },
+  { value: 'лютий', label: 'Лютий' },
+  { value: 'березень', label: 'Березень' },
+  { value: 'квітень', label: 'Квітень' },
+  { value: 'травень', label: 'Травень' },
+  { value: 'черавень', label: 'Черавень' },
+  { value: 'липень', label: 'Липень' },
+  { value: 'серпень', label: 'Серпень' },
+  { value: 'вересень', label: 'Вересень' },
+  { value: 'жовтень', label: 'Жовтень' },
+  { value: 'листопад', label: 'Листопад' },
+  { value: 'грудень', label: 'Грудень' },
 ];
 
 const lessonsOptions: Option[] = [
-  { value: 'math', label: 'Math' },
-  { value: 'science', label: 'Science' },
-  { value: 'history', label: 'History' },
-  // Add more lessons
+  { value: 'математика', label: 'Математика' },
+  { value: 'фізика', label: 'Фізика' },
+  { value: 'історія', label: 'Історія' },
+  { value: 'українська_мова', label: 'Українська мова' },
+  { value: 'фізкультура', label: 'Фізкультура' },
+  { value: 'зарубіжна_література', label: 'Зарубіжна література' },
 ];
 
+interface OpenMenusState {
+  class: boolean;
+  month: boolean;
+  lesson: boolean;
+}
+
+
+
 export function SchoolDiaryToolbar() {
+  const [openMenus, setOpenMenus] = useState({
+    class: false,
+    month: false,
+    lesson: false,
+  });
+
+  const handleMenuToggle = (menuName: keyof OpenMenusState) => {
+    const updatedOpenMenus: OpenMenusState = { class: false, month: false, lesson: false };
+    updatedOpenMenus[menuName] = true;
+    setOpenMenus(updatedOpenMenus);
+  };
+
   const handleClassSelect = (selectedOption: Option) => {
-    // Handle the selected class option
     console.log('Selected class:', selectedOption);
+    handleMenuToggle('class');
   };
 
   const handleMonthSelect = (selectedOption: Option) => {
-    // Handle the selected month option
-    console.log('Selected month:', selectedOption);
+    console.log('Selected month', selectedOption);
+    handleMenuToggle('month');
   };
 
   const handleLessonSelect = (selectedOption: Option) => {
-    // Handle the selected lesson option
     console.log('Selected lesson:', selectedOption);
+    handleMenuToggle('lesson');
   };
 
   return (
-    <div className="toolbar-menu">
-      <DropdownMenu options={classesOptions} onSelect={handleClassSelect} />
-      <DropdownMenu options={monthsOptions} onSelect={handleMonthSelect} />
-      <DropdownMenu options={lessonsOptions} onSelect={handleLessonSelect} />
+    <div className="flex flex-row gap-3">
+      <DropdownMenu
+        options={classesOptions}
+        title="Оберіть класс"
+        onSelect={handleClassSelect}
+        isOpen={openMenus.class}
+        onToggle={() => handleMenuToggle('class')}
+      />
+      <DropdownMenu
+        options={monthsOptions}
+        title="Оберіть місяць"
+        onSelect={handleMonthSelect}
+        isOpen={openMenus.month}
+        onToggle={() => handleMenuToggle('month')}
+      />
+      <DropdownMenu
+        options={lessonsOptions}
+        title="Оберіть предмет"
+        onSelect={handleLessonSelect}
+        isOpen={openMenus.lesson}
+        onToggle={() => handleMenuToggle('lesson')}
+      />
     </div>
   );
+
+
 }
 

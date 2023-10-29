@@ -6,7 +6,7 @@ import { User } from "@prisma/client";
 import { getUserById } from "~/utils/user.server";
 import React, { useState, useEffect, KeyboardEvent } from "react";
 import { UserInfo } from "~/components/userInfo";
-import DiaryComponent from "../components/diary";
+import SchoolDiary from "../components/diary";
 import { ScheduleComponent } from "~/components/schedule";
 import { SomethingElseComponent } from "~/components/somethingElse";
 import { NavItem } from "~/components/navItem";
@@ -84,7 +84,7 @@ export default function Home() {
               }}
             />
           )}
-          {activeTab === 1 && <DiaryComponent />}
+          {activeTab === 1 && <SchoolDiary />}
           {activeTab === 2 && <ScheduleComponent />}
           {activeTab === 3 && <SomethingElseComponent />}
         </div>

@@ -16,6 +16,26 @@ model User {
   password String
 }
 
+model Schedule {
+  id     Int      @id @map("_id")
+  day    String
+  time   DateTime
+  lessons Lesson[]
+}
+
+model Lesson {
+  id         String   @id @map("_id") @default(auto()) @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  name       String
+  description String
+  teacher    String
+  location   String
+  schedule   Schedule  @relation(fields: [scheduleId], references: [id])
+  scheduleId Int
+}
+
+
 generator client {
   provider = "prisma-client-js"
 }

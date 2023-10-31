@@ -7,7 +7,7 @@ import { getUserById } from "~/utils/user.server";
 import React, { useState, useEffect, KeyboardEvent } from "react";
 import { UserInfo } from "~/components/userInfo";
 import SchoolDiary from "../components/diary";
-import { ScheduleComponent } from "~/components/schedule";
+import {Schedule}  from "~/components/schedule";
 import { SomethingElseComponent } from "~/components/somethingElse";
 import { NavItem } from "~/components/navItem";
 import { LogoutComponent } from "~/components/logoutComponent";
@@ -85,7 +85,7 @@ export default function Home() {
             />
           )}
           {activeTab === 1 && <SchoolDiary />}
-          {activeTab === 2 && <ScheduleComponent />}
+          {activeTab === 2 && <Schedule />}
           {activeTab === 3 && <SomethingElseComponent />}
         </div>
       </div>

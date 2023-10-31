@@ -12,14 +12,19 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@mui/icons-material": "^5.14.16",
+    "@mui/lab": "^5.0.0-alpha.151",
+    "@mui/material": "^5.14.16",
     "@prisma/client": "^5.4.0",
     "@remix-run/css-bundle": "^2.0.1",
     "@remix-run/node": "^2.0.1",
     "@remix-run/react": "^2.0.1",
     "@remix-run/serve": "^2.0.1",
+    "@types/moment": "^2.13.0",
     "bcryptjs": "^2.4.3",
     "isbot": "^3.6.8",
     "react": "^18.2.0",
+    "react-big-calendar": "^1.8.5",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
@@ -27,6 +32,7 @@
     "@remix-run/eslint-config": "^2.0.1",
     "@types/bcryptjs": "^2.4.4",
     "@types/react": "^18.2.20",
+    "@types/react-big-calendar": "^1.8.3",
     "@types/react-dom": "^18.2.7",
     "autoprefixer": "^10.4.16",
     "concurrently": "^8.2.1",

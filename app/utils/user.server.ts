@@ -3,9 +3,10 @@ import bcrypt from 'bcryptjs'
 import type { RegisterForm } from './types.server'
 import { prisma } from './prisma.server'
 
+// user === teacher
 export const createUser = async (user: RegisterForm) => {
   const passwordHash = await bcrypt.hash(user.password, 10)
-  const newUser = await prisma.user.create({
+  const newUser = await prisma.teacher.create({
     data: {
       email: user.email,
       password: passwordHash,
@@ -19,7 +20,7 @@ export const createUser = async (user: RegisterForm) => {
 }
 
 export const getUserById = async (userId: string) => {
-  return prisma.user.findMany({
+  return prisma.teacher.findMany({
     where: {
       id:  userId,
     },

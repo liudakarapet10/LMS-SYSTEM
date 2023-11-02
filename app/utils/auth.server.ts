@@ -1,9 +1,10 @@
-import { RegisterForm, LoginForm } from "./types.server";
+import type { RegisterForm, LoginForm } from "./types.server";
 import { prisma } from "./prisma.server";
 import { redirect, json, createCookieSessionStorage } from "@remix-run/node";
 import { createUser } from "./user.server";
 import bcrypt from 'bcryptjs';
 
+// user === teacher
 const sessionSecret = process.env.SESSION_SECRET
 if (!sessionSecret) {
   throw new Error('SESSION_SECRET must be set')
@@ -32,7 +33,7 @@ export async function createUserSession(userId: string, redirectTo: string) {
 }
 
 export async function register(user: RegisterForm) {
-  const exists = await prisma.user.count({ where: { email: user.email } });
+  const exists = await prisma.teacher.count({ where: { email: user.email } });
 
   if (exists) {
     return json(
@@ -57,7 +58,7 @@ export async function register(user: RegisterForm) {
 
 
 export async function login({ email, password }: LoginForm) {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.teacher.findUnique({
       where: { email },
     })
   
@@ -82,7 +83,7 @@ export async function login({ email, password }: LoginForm) {
     return storage.getSession(request.headers.get('Cookie'))
   }
   
-  async function getUserId(request: Request) {
+  export async function getUserId(request: Request) {
     const session = await getUserSession(request)
     const userId = session.get('userId')
     if (!userId || typeof userId !== 'string') return null
@@ -96,7 +97,7 @@ export async function login({ email, password }: LoginForm) {
     }
   
     try {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.teacher.findUnique({
         where: { id: userId },
         select: { id: true, email: true, profile: true },
       })

@@ -1,10 +1,12 @@
-import { json, LoaderFunction } from "@remix-run/node";
-import { Outlet, useLoaderData } from "@remix-run/react";
+import type { LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/utils/auth.server";
 import { Layout } from "~/components/layout";
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { getUserById } from "~/utils/user.server";
-import React, { useState, useEffect, KeyboardEvent } from "react";
+import type { KeyboardEvent } from "react";
+import React, { useState, useEffect } from "react";
 import { UserInfo } from "~/components/userInfo";
 import SchoolDiary from "../components/diary";
 // import {Schedule}  from "~/components/schedule";
@@ -59,6 +61,8 @@ export default function Home() {
           <div className="flex-1 overflow-y-scroll py-4 flex flex-col gap-y-10">
           <nav className="w-auto px-3.5" aria-label="Main Navigation">
               <ul className="flex flex-col gap-[10px]">
+
+                <NavLink to="school-diary">Щоденник!</NavLink>
                 {menuItems.map((text, index) => (
                   <NavItem
                     key={index}
@@ -87,6 +91,8 @@ export default function Home() {
           {activeTab === 1 && <SchoolDiary />}
           {/* {activeTab === 2 && <Schedule />} */}
           {activeTab === 3 && <SomethingElseComponent />}
+      <Outlet/>
+
         </div>
       </div>
     </Layout>

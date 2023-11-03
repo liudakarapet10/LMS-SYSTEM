@@ -1,12 +1,21 @@
-// import { db } from "./db.server";
+import { prisma as db } from "./prisma.server";
 
-// export const getAllClassroomId = async (classroomId: string) => {
-//     return await db.classroom.findMany({
-//       where: {
-//         id: classroomId,
-//       },
-//       include: {
-//         students: true
-//       },
-//     });
-//   };
+export const getAllClassrooms = async () => {
+  return await db.classroom.findMany({
+    select: {
+        id: true,
+        name: true
+    }
+  });
+};
+
+export const getClassWithStudents = async (className: string) => {
+  return await db.classroom.findUnique({
+    where: {
+      name: className
+    },
+    include: {
+      students: true
+    }
+  })
+}

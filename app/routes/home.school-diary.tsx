@@ -1,63 +1,81 @@
-import type { ActionFunction , redirect, type LoaderFunction } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
-import { getUserId, requireUserId } from "~/utils/auth.server";
-import { createLessonByTeacher, getAllLessonsByTeacherId } from "~/utils/teacher.server";
+import { SchoolDiaryToolbar } from "~/components/schoolDiaryToolbar";
+import { json, type ActionFunction, type LoaderFunction } from "@remix-run/node";
+import { useLoaderData, useMatch, useMatches, useRouteLoaderData } from "@remix-run/react";
+import { getClassWithStudents } from "~/utils/classroom.server";
+import { getUserId } from "~/utils/auth.server";
+import { getLessonsByPeriodAndClass } from "~/utils/lessons.server";
+import { getDaysInMonth, getFullMonthStartEndDays } from "~/helpers/timeConvertor";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const teacherId = await getUserId(request);
-  if(!teacherId) return null
+  const userId = await getUserId(request);
+  if (!userId) {
+    return null;
+    // status 401
+  }
+  const url = new URL(request.url);
+  const classroom = url.searchParams.get("class");
+  const period = url.searchParams.get("period");
 
-  const allLessonsById = await getAllLessonsByTeacherId(teacherId);
-  return allLessonsById;
+  if(classroom && period) {
+    const {firstDay, lastDay } = getFullMonthStartEndDays(period)
+    const lessons = await getLessonsByPeriodAndClass(classroom, {firstDay, lastDay})
+    const classWithStudents = await getClassWithStudents('8-Б');
+
+    return json({period, lessons, classWithStudents})
+  }
+
+  return json({period: '', lessons: [], classWithStudents: {}})
 };
-export const action: ActionFunction = async ({request}) => {
-  const teacherId = await getUserId(request);
-  if(!teacherId) return null
 
-  const form = await request.formData()
+export const action: ActionFunction = async ({ request }) => {
+  // const teacherId = await getUserId(request);
+  // if (!teacherId) return null;
 
-  const name = form.get('name');
-  const time = form.get('time');
-  const location = form.get('location');
-if(typeof name !== 'string' || typeof time !== 'string' || typeof location !== 'string' ||  typeof teacherId !== 'string') {
-  return null
-}
+  // const form = await request.formData();
 
-  return await createLessonByTeacher(teacherId, name, time, location)
-  
-}
+  // const name = form.get("name");
+  // const time = form.get("time");
+  // const location = form.get("location");
+  // if (
+  //   typeof name !== "string" ||
+  //   typeof time !== "string" ||
+  //   typeof location !== "string" ||
+  //   typeof teacherId !== "string"
+  // ) {
+  //   return null;
+  // }
+
+};
+
 
 export default function SchoolDiary() {
-  const data = useLoaderData();
 
-  console.log(111, data)
-  return <div>diary
-    {data.length>0 && <ul>
-      {data.map((e) => <li key={e.id}>{e.name} - {e.time} - {e.location}</li>)}
-      </ul>}
+const {period, lessons, classWithStudents} = useLoaderData();
+console.log(period, lessons, classWithStudents)
+
+// console.log(getDaysInMonth('2024-02'))
 
 
-<Form method="post">
+// const daysInJanuary = getDaysInMonth(2023, 1);
+// console.log(daysInJanuary)
+  // const matches = useMatches();
+  // console.log(11, matches)
+  const {allClasses} = useRouteLoaderData("routes/home");
   
-  <label >
-Name(MATH)
-<input type="text" name="name" className="border"/>
-  </label>
-    
-  <label >
-Time
-<input type="text" name="time" className="border"/>
-  </label>
-    
-  <label >
-Border
-<input type="text" name="location" className="border"/>
-  </label>
-<button>Submit</button>
-  
-</Form>
-
-  </div>;
+  return (
+    <div>
+      <SchoolDiaryToolbar classes={allClasses}/>
+      <div className="bg-white p-3">
+       <b>Lessons</b>
+       {lessons && lessons.length > 0 && <ul>
+        {lessons.map(e => (<li key={e.id}>{e.name}--{e.startTime}--{e.classroom}</li>))}
+        </ul>} 
+       <b>Class with students</b> 
+         {classWithStudents && <p>{classWithStudents.name}</p>} 
+         {classWithStudents && classWithStudents?.students?.length > 0 &&  <ul>
+        {classWithStudents.students.map(e => (<li key={e.id}>{e.profile.firstName}--{e.profile.lastName}</li>))}
+        </ul>} 
+      </div>
+    </div>
+  );
 }
-
-

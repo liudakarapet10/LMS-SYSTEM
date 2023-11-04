@@ -5,6 +5,7 @@ import { getClassWithStudents } from "~/utils/classroom.server";
 import { getUserId } from "~/utils/auth.server";
 import { getLessonsByPeriodAndClass } from "~/utils/lessons.server";
 import { getDaysInMonth, getFullMonthStartEndDays } from "~/helpers/timeConvertor";
+import DymanicTable from "~/components/DynamicTable";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -51,13 +52,13 @@ export const action: ActionFunction = async ({ request }) => {
 export default function SchoolDiary() {
 
 const {period, lessons, classWithStudents} = useLoaderData();
-console.log(period, lessons, classWithStudents)
+console.log(classWithStudents);
 
-// console.log(getDaysInMonth('2024-02'))
+// console.log(getDaysInMonth(period));
 
 
-// const daysInJanuary = getDaysInMonth(2023, 1);
-// console.log(daysInJanuary)
+const daysInJanuary = getDaysInMonth(period);
+// console.log(daysInJanuary);
   // const matches = useMatches();
   // console.log(11, matches)
   const {allClasses} = useRouteLoaderData("routes/home");
@@ -68,7 +69,7 @@ console.log(period, lessons, classWithStudents)
       <div className="bg-white p-3">
        <b>Lessons</b>
        {lessons && lessons.length > 0 && <ul>
-        {lessons.map(e => (<li key={e.id}>{e.name}--{e.startTime}--{e.classroom}</li>))}
+        {lessons.map((e) => (<li key={e.id}>{e.name}--{e.startTime}--{e.classroom}</li>))}
         </ul>} 
        <b>Class with students</b> 
          {classWithStudents && <p>{classWithStudents.name}</p>} 
@@ -76,6 +77,7 @@ console.log(period, lessons, classWithStudents)
         {classWithStudents.students.map(e => (<li key={e.id}>{e.profile.firstName}--{e.profile.lastName}</li>))}
         </ul>} 
       </div>
+      <DymanicTable columnCount={daysInJanuary} classWithStudents={classWithStudents}/>
     </div>
   );
 }

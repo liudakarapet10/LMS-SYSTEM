@@ -1,5 +1,6 @@
 import { redirect } from "@remix-run/node";
-import React, { MouseEvent, useEffect, useRef, useState } from "react";
+import type { MouseEvent} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Portal } from "~/components/portal";
 import { Modal } from "./modal";
 import { MarkForm } from "./MarkForm";
@@ -22,11 +23,10 @@ export default function DymanicTable({
     (_, index: number) => index + 1
   );
 
-  const [isOpesnModal, setIsOpenModal] = useState(false);
   const cellAttributes  = useRef<HTMLParagraphElement | null>(null);
 
   const handleCellClick = (event: MouseEvent<HTMLTableElement>) => {
-    setIsOpenModal(true);
+    // setIsOpenModal(true);
   };
 
   const getCellAtributes = () => {
@@ -93,11 +93,24 @@ export default function DymanicTable({
     return lesson.teacherId;
   };
 
+  const [isOpenModal, setIsOpenModal] = useState(false);
+
+
+
+
+
+  const handleClick = () => {
+    console.log('s')
+    setIsOpenModal(!isOpenModal);
+  };
+  useEffect(()=>{
+    console.log("useeffect", isOpenModal)
+  },[isOpenModal])
 
   return (
     <div className="rounded-b-lg">
       <table
-        onClick={handleCellClick}
+        onClick={handleClick}
         className="w-full border-collapse border bg-white"
       >
         <thead>
@@ -138,7 +151,7 @@ export default function DymanicTable({
             ))}
         </tbody>
         <Portal wrapperId="marks-modal">
-          <Modal isOpenModal={isOpesnModal} className="w-2/3 p-10">
+          <Modal isOpenModal={isOpenModal} handleClick={handleClick} className="w-2/3 p-10">
             <MarkForm dataId={getCellAtributes} />
           </Modal>
         </Portal>

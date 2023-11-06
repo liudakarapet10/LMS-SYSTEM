@@ -40,23 +40,26 @@ model Teacher {
 }
 
 model Lesson {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   name        String
+  title       String
   description String?
-  startTime        String
-  classroom    String
-  teacher     Teacher    @relation(references: [id], fields: [teacherId], "MyLessons")
-  teacherId   String     @db.ObjectId
-  marks       Mark[]     @relation("LessonMarks")
+  startTime   String
+  endTime     String
+  classroom   String
+  location    String?
+  teacher     Teacher  @relation(references: [id], fields: [teacherId], "MyLessons")
+  teacherId   String   @db.ObjectId
+  marks       Mark[]   @relation("LessonMarks")
 }
 
 model Classroom {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  name String @unique
+  name      String    @unique
   students  Student[] @relation("ClassroomStudents")
 }
 
@@ -78,8 +81,8 @@ model Mark {
   // todo -validate
   teacher   Teacher  @relation(references: [id], fields: [teacherId], "TeacherMarks")
   teacherId String   @db.ObjectId
-  student   Student  @relation(references: [id], fields: [teacherId], "StudentMarks")
+  student   Student  @relation(references: [id], fields: [studentId], "StudentMarks")
   studentId String   @db.ObjectId
-  Lesson    Lesson   @relation(fields: [lessonId], references: [id], "LessonMarks")
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], "LessonMarks")
   lessonId  String   @db.ObjectId
 }

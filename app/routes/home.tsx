@@ -16,8 +16,8 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Home() {
-
-  const { user = [] } = useLoaderData();
+  const { user = [], allClasses } = useLoaderData();
+  // console.log(allClasses);
 
   return (
     <Layout>
@@ -32,9 +32,10 @@ export default function Home() {
           <div className="flex-1 overflow-y-scroll py-4 flex flex-col gap-y-10">
             <nav className="w-auto px-3.5" aria-label="Main Navigation">
               <ul className="flex flex-col gap-[10px]">
-                <NavLink to="school-diary">Щоденник!</NavLink>
-                <NavLink to="schedule">Розклад!</NavLink>
-                <NavLink to="lessons">Уроки!</NavLink>
+                <NavLink className="hover:text-blue-600" to="school-diary">Щоденник</NavLink>
+                <NavLink className="hover:text-blue-600" to="schedule">Розклад</NavLink>
+                <NavLink className="hover:text-blue-600" to="lessons">Уроки</NavLink>
+                <NavLink className="hover:text-blue-600" to="testing">Тестінг</NavLink>
               </ul>
             </nav>
           </div>

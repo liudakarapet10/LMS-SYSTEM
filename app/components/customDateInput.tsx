@@ -16,8 +16,8 @@ import { useId } from "react";
 export const CustomDateInput = ({ label, name }: ICustomDateInput) => {
   const id = useId();
   return (
-    <div>
-        <label htmlFor={id}>{label}</label>
+    <div className="flex">
+        <label className="h-full flex flex-col justify-center pr-2" htmlFor={id}>{label}</label>
         <input type="month" name={name} id={id}/>
     </div>
   );

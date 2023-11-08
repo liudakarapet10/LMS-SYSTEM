@@ -1,14 +1,14 @@
-import { redirect } from "@remix-run/node";
-import type { MouseEvent} from "react";
-import React, { useEffect, useRef, useState } from "react";
-import { Portal } from "~/components/portal";
+
+import React, { useEffect, useState } from "react";
 import { Modal } from "./modal";
 import { MarkForm } from "./MarkForm";
+import { formColumnsByLessons, getAttributtes, isLessonInThisDate } from "~/helpers/school-dairy-helpers";
+import type { DaysWithLessons, IClassroomWithStudents, ILessonWithMarks } from "~/types/project.types";
 
 interface columnCountProps {
   columnCount: number;
-  classWithStudents: any;
-  lessons: any;
+  classWithStudents: IClassroomWithStudents;
+  lessons: ILessonWithMarks[];
 }
 
 // todo - filter by Lesson type
@@ -23,86 +23,38 @@ export default function DymanicTable({
     (_, index: number) => index + 1
   );
 
-  const cellAttributes  = useRef<HTMLParagraphElement | null>(null);
+  // todo - only for 1 Lesson type !!!!!!!!! (+ connected to teacher)
+  const [daysWithLessons, setDaysWithLessons] = useState<DaysWithLessons | []>([]);
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+  const [lessonId, setLessonId] = useState<string>('');
+  const [studentId, setStudentId] = useState<string>(''); 
+ 
+  useEffect(() => {
+    setDaysWithLessons(() => formColumnsByLessons(lessons));
+  }, [lessons]);
 
-  const handleCellClick = (event: MouseEvent<HTMLTableElement>) => {
-    // setIsOpenModal(true);
-  };
 
-  const getCellAtributes = () => {
-    if (cellAttributes.current){
-      const teacherId = cellAttributes.current.getAttribute('data-teacher-id');
-      const studentId = cellAttributes.current.getAttribute('data-student-id');
-      const lessonId = cellAttributes.current.getAttribute('data-lesson-id');
 
-      return {teacherId, studentId, lessonId };
+
+  
+
+
+
+
+  const handleClick = (e: React.SyntheticEvent<EventTarget>) => {
+    setIsOpenModal(!isOpenModal);
+    
+    if(!e?.target || !(e.target instanceof HTMLParagraphElement)) return
+  
+    if(e.target.dataset.lessonId && e.target.dataset.studentId) {
+      setLessonId(e.target.dataset.lessonId)
+      setStudentId(e.target.dataset.studentId)
     }
 
-  }
-
-
-  // todo - only for 1 Lesson type !!!!!!!!! (+ connected to teacher)
-  const [daysWithLessons, setDaysWithLessons] = useState([]);
-  const convertTimeToDate = (date) => {
-    return new Date(date).getDate();
+   
   };
 
-  const formColumnsByLessons = (lessons1) => {
-    let columnsWithLessonId = [];
-    lessons1.forEach((e) => {
-      const column = {
-        date: convertTimeToDate(e.startTime),
-        lessonId: e.id,
-        marks: e.marks,
-        teacherId: e.teacherId,
-      };
-      columnsWithLessonId.push(column);
-    });
-    return columnsWithLessonId;
-  };
-  // form dates by lessons
-  // "2023-11-04T15:24:12.277Z"
-
-  useEffect(() => {
-    const arr = formColumnsByLessons(lessons);
-    setDaysWithLessons(arr);
-  }, []);
-
-  const isLessonInThisDate = (date) => {
-    return daysWithLessons.find((e) => e.date === date) ? true : false;
-  };
-  const findMarkOfLessonDateAndStudentId = (lessonDate, studentID) => {
-    const lesson = daysWithLessons.find((e) => e.date === lessonDate);
-    if (!lesson) return;
-    if (lesson?.marks.length < 0) return;
-    const mark = lesson?.marks.find((e) => e.studentId === studentID);
-    if (!mark) return;
-
-    return mark.value;
-  };
-
-  const getLessonId = (lessonDate) => {
-    const lesson = daysWithLessons.find((e) => e.date === lessonDate);
-    if (!lesson) return;
-    return lesson.lessonId;
-  };
-
-  const getTeacherId = (lessonDate) => {
-    const lesson = daysWithLessons.find((e) => e.date === lessonDate);
-    if (!lesson) return;
-    return lesson.teacherId;
-  };
-
-  const [isOpenModal, setIsOpenModal] = useState(false);
-
-
-
-
-
-  const handleClick = () => {
-    console.log('s')
-    setIsOpenModal(!isOpenModal);
-  };
+  
   useEffect(()=>{
     console.log("useeffect", isOpenModal)
   },[isOpenModal])
@@ -110,7 +62,6 @@ export default function DymanicTable({
   return (
     <div className="rounded-b-lg">
       <table
-        onClick={handleClick}
         className="w-full border-collapse border bg-white"
       >
         <thead>
@@ -133,13 +84,13 @@ export default function DymanicTable({
                 </th>
                 {columns.map((column, index) => (
                   <td className="border" key={index}>
-                    {daysWithLessons && isLessonInThisDate(column) && (
+                    {daysWithLessons && isLessonInThisDate(column, daysWithLessons) && (
                       <p
+                      onClick={(e) => {handleClick(e)}}
                         className="block w-full h-full"
-                        ref={cellAttributes}
-                        data-teacher-id={getTeacherId(column)}
+                        data-teacher-id={getAttributtes(column, daysWithLessons)?.lessonId}
                         data-student-id={e.id}
-                        data-lesson-id={getLessonId(column)}
+                        data-lesson-id={getAttributtes(column, daysWithLessons)?.teacherId}
                       >
                         {" "}
                         q{findMarkOfLessonDateAndStudentId(column, e.id)}
@@ -150,11 +101,9 @@ export default function DymanicTable({
               </tr>
             ))}
         </tbody>
-        <Portal wrapperId="marks-modal">
-          <Modal isOpenModal={isOpenModal} handleClick={handleClick} className="w-2/3 p-10">
-            <MarkForm dataId={getCellAtributes} />
+          <Modal isOpenModal={isOpenModal}  handleClick={handleClick} className="w-2/3 p-10">
+            <MarkForm lessonId={lessonId} studentId={studentId}  />
           </Modal>
-        </Portal>
       </table>
     </div>
   );

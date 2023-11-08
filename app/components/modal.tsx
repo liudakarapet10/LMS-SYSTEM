@@ -1,6 +1,5 @@
 // app/components/modal.tsx
 import { Portal } from './portal'
-import { useNavigate } from '@remix-run/react'
 
 interface props {
   children: React.ReactNode
@@ -11,7 +10,7 @@ interface props {
 }
 
 export const Modal: React.FC<props> = ({ children, isOpenModal, ariaLabel, className, handleClick }) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   
   
   if (!isOpenModal) return null;
@@ -37,7 +36,7 @@ export const Modal: React.FC<props> = ({ children, isOpenModal, ariaLabel, class
       <div className="fixed inset-0 pointer-events-none flex justify-center items-center max-h-screen overflow-scroll">
 
         <div className={`${className} p-4 bg-gray-200 pointer-events-auto max-h-screen md:rounded-xl`}>
-      <button onClick={() => handleClick()}>asdadasdasd</button>
+      <button onClick={() => handleClick()}>Close</button>
           {children}
         </div>
       </div>

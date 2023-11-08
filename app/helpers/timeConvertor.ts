@@ -16,6 +16,7 @@ export function getFullMonthStartEndDays(yearAndMonth: string | number) {
 
 
   export function getDaysInMonth(yearWithMonth: string) {
+    if(!yearWithMonth) return
     const {year, month} = createYearAndMonthOrder(yearWithMonth);
     return new Date(Number(year), Number(month), 0).getDate();
   }
@@ -23,4 +24,9 @@ export function getFullMonthStartEndDays(yearAndMonth: string | number) {
 function createYearAndMonthOrder(yearWithMonth: string) {
  const yearAndMonth = yearWithMonth.split('-');
  return {year: yearAndMonth[0], month: yearAndMonth[1]}
+}
+
+
+export function convertTimeToDate(date: string | number) {
+  return new Date(date).getDate();
 }

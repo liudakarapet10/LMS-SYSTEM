@@ -6,8 +6,7 @@ import {
 } from "@remix-run/node";
 import {
   useLoaderData,
-  useMatch,
-  useMatches,
+
   useRouteLoaderData,
 } from "@remix-run/react";
 import { getClassWithStudents } from "~/utils/classroom.server";
@@ -15,7 +14,8 @@ import { getUserId } from "~/utils/auth.server";
 import { getLessonsByPeriodAndClass } from "~/utils/lessons.server";
 import { getDaysInMonth, getFullMonthStartEndDays } from "~/helpers/timeConvertor";
 import DymanicTable from "~/components/DynamicTable";
-import { tCreateMark } from "~/utils/testing.server";
+
+import type { IClassroomWithStudents, ILessonWithMarks } from "~/types/project.types";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -35,10 +35,13 @@ export const loader: LoaderFunction = async ({ request }) => {
     return json({period, lessons, classWithStudents})
   }
 
-  return json({period: '', lessons: [], classWithStudents: {}})
+  return null
 };
 
 export const action: ActionFunction = async ({ request }) => {
+  const teacherId = await getUserId(request);
+  console.log('adsfsf')
+  return null
 //// I don't get teacherId, studentId, lessonId
 
 
@@ -60,19 +63,20 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function SchoolDiary() {
-  const { period, lessons, classWithStudents } = useLoaderData();
-  console.log(lessons);
+  const loaderData = useLoaderData()
+  // need refactor 
 
-  const daysInJanuary = getDaysInMonth(period);
-  // console.log(daysInJanuary);
-  // const matches = useMatches();
-  // console.log(11, matches)
+  const period: string = loaderData?.period || null
+  const lessons: ILessonWithMarks[] = loaderData?.lessons || null
+  const classWithStudents: IClassroomWithStudents = loaderData?.classWithStudents || null
+
+  const daysInMonth = getDaysInMonth(period);
   const { allClasses } = useRouteLoaderData("routes/home");
 
   return (
     <div className="p-4">
       <SchoolDiaryToolbar classes={allClasses}/>
-      <div className="bg-white p-3">
+      {/* <div className="bg-white p-3">
         <b>Lessons</b>
         {lessons && lessons.length > 0 && (
           <ul>
@@ -94,12 +98,12 @@ export default function SchoolDiary() {
             ))}
           </ul>
         )}
-      </div>
-      <DymanicTable
-        columnCount={daysInJanuary}
+      </div> */}
+      {loaderData ? <DymanicTable
+        columnCount={daysInMonth || 0}
         classWithStudents={classWithStudents}
         lessons={lessons}
-      />
+      /> : <div>Table skeleton</div>}
     </div>
   );
 }

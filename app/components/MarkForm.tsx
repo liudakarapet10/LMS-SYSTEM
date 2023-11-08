@@ -1,17 +1,15 @@
 import { Form } from "@remix-run/react";
+import { Button } from "./Button";
 
-interface IMarkForm {
-  dataId: {
-    teacherId: string | null;
-    studentId: string | null;
-    lessonId: string | null;
-  };
+
+interface IMarkFormProps {
+    teacherId?: string;
+    studentId?: string;
+    lessonId?: string;
 }
 
-export const MarkForm = ({ dataId }: IMarkForm) => {
-  const teacherId = dataId.teacherId || "";
-  const studentId = dataId.studentId || "";
-  const lessonId = dataId.lessonId || "";
+export const MarkForm = ({studentId, lessonId } : IMarkFormProps) => {
+
 
   return (
     <div>
@@ -21,10 +19,10 @@ export const MarkForm = ({ dataId }: IMarkForm) => {
         <input type="hidden" name="intent" value="createMark" />
         <input type="number" name="mark_value" min="0" max="12" />
         {/* inputs values are empty */}
-        <input type="hidden" name="m_teacher_id" value={teacherId} />     
-        <input type="hidden" name="m_teacher_id" value={studentId} />
+        {/* <input type="hidden" name="m_teacher_id" value={teacherId} />*/}
+        <input type="hidden" name="m_student_id" value={studentId} />
         <input type="hidden" name="m_lesson_id" value={lessonId} />
-        <button>submit</button>
+        <Button label="Submit"/>
       </Form>
     </div>
   );

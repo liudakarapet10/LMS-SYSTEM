@@ -48,7 +48,8 @@ model Lesson {
   description String?
   startTime   String
   endTime     String
-  classroom   String
+  classroom Classroom @relation(references: [id], fields: [classroomId], "ClassroomLessons")
+  classroomId String @db.ObjectId
   location    String?
   teacher     Teacher  @relation(references: [id], fields: [teacherId], "MyLessons")
   teacherId   String   @db.ObjectId
@@ -61,6 +62,7 @@ model Classroom {
   updatedAt DateTime  @updatedAt
   name      String    @unique
   students  Student[] @relation("ClassroomStudents")
+  lessons Lesson[] @relation("ClassroomLessons")
 }
 
 model Student {

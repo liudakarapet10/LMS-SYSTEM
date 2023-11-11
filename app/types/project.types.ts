@@ -8,6 +8,7 @@ export type IClassroomWithStudents = Prisma.ClassroomGetPayload<{
   }>;
 
   export type LessonInColumn = {
+      classroom: string;
       date: number,
       lessonId: ILessonWithMarks['id'],
       marks: ILessonWithMarks['marks'],

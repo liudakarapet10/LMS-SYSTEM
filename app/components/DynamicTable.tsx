@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "./modal";
 import { MarkForm } from "./MarkForm";
-import { formColumnsByLessons, getAttributtes, isLessonInThisDate } from "~/helpers/school-dairy-helpers";
+import { findMarkOfLessonDateAndStudentId, formColumnsByLessons, getAttributtes, isLessonInThisDate } from "~/helpers/school-dairy-helpers";
 import type { DaysWithLessons, IClassroomWithStudents, ILessonWithMarks } from "~/types/project.types";
 
 interface columnCountProps {
@@ -28,6 +28,8 @@ export default function DymanicTable({
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const [lessonId, setLessonId] = useState<string>('');
   const [studentId, setStudentId] = useState<string>(''); 
+  const [teacherId, setTeacherId] = useState<string>(''); 
+
  
   useEffect(() => {
     setDaysWithLessons(() => formColumnsByLessons(lessons));
@@ -35,28 +37,21 @@ export default function DymanicTable({
 
 
 
-
-  
-
-
-
-
   const handleClick = (e: React.SyntheticEvent<EventTarget>) => {
     setIsOpenModal(!isOpenModal);
     
     if(!e?.target || !(e.target instanceof HTMLParagraphElement)) return
-  
-    if(e.target.dataset.lessonId && e.target.dataset.studentId) {
+     
+    if(e.target.dataset.lessonId && e.target.dataset.studentId  && e.target.dataset.teacherId) {
       setLessonId(e.target.dataset.lessonId)
       setStudentId(e.target.dataset.studentId)
+      setTeacherId(e.target.dataset.teacherId)
     }
-
-   
   };
 
   
   useEffect(()=>{
-    console.log("useeffect", isOpenModal)
+    // console.log("useeffect", isOpenModal)
   },[isOpenModal])
 
   return (
@@ -93,7 +88,7 @@ export default function DymanicTable({
                         data-lesson-id={getAttributtes(column, daysWithLessons)?.teacherId}
                       >
                         {" "}
-                        q{findMarkOfLessonDateAndStudentId(column, e.id)}
+                        q{findMarkOfLessonDateAndStudentId(column, e.id, daysWithLessons )}
                       </p>
                     )}
                   </td>
@@ -102,7 +97,7 @@ export default function DymanicTable({
             ))}
         </tbody>
           <Modal isOpenModal={isOpenModal}  handleClick={handleClick} className="w-2/3 p-10">
-            <MarkForm lessonId={lessonId} studentId={studentId}  />
+            <MarkForm lessonId={lessonId} studentId={studentId} teacherId={teacherId} />
           </Modal>
       </table>
     </div>

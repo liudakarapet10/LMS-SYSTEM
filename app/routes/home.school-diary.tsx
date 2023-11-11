@@ -4,18 +4,21 @@ import {
   type ActionFunction,
   type LoaderFunction,
 } from "@remix-run/node";
-import {
-  useLoaderData,
-
-  useRouteLoaderData,
-} from "@remix-run/react";
+import { useLoaderData, useRouteLoaderData } from "@remix-run/react";
 import { getClassWithStudents } from "~/utils/classroom.server";
 import { getUserId } from "~/utils/auth.server";
 import { getLessonsByPeriodAndClass } from "~/utils/lessons.server";
-import { getDaysInMonth, getFullMonthStartEndDays } from "~/helpers/timeConvertor";
+import {
+  getDaysInMonth,
+  getFullMonthStartEndDays,
+} from "~/helpers/timeConvertor";
 import DymanicTable from "~/components/DynamicTable";
 
-import type { IClassroomWithStudents, ILessonWithMarks } from "~/types/project.types";
+import type {
+  IClassroomWithStudents,
+  ILessonWithMarks,
+} from "~/types/project.types";
+import { tCreateMark } from "~/utils/marks.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -27,55 +30,58 @@ export const loader: LoaderFunction = async ({ request }) => {
   const classroom = url.searchParams.get("class");
   const period = url.searchParams.get("period");
 
-  if(classroom && period) {
-    const {firstDay, lastDay } = getFullMonthStartEndDays(period)
-    const lessons = await getLessonsByPeriodAndClass(classroom, {firstDay, lastDay})
-    const classWithStudents = await getClassWithStudents('5-B'); 
+  if (classroom && period) {
+    const { firstDay, lastDay } = getFullMonthStartEndDays(period);
+    const lessons = await getLessonsByPeriodAndClass(classroom, {
+      firstDay,
+      lastDay,
+    });
+    const classWithStudents = await getClassWithStudents("5-B");
 
-    return json({period, lessons, classWithStudents})
+    return json({ period, lessons, classWithStudents });
   }
 
-  return null
+  return null;
 };
 
 export const action: ActionFunction = async ({ request }) => {
-  const teacherId = await getUserId(request);
-  console.log('adsfsf')
-  return null
-//// I don't get teacherId, studentId, lessonId
+  const form = await request.formData();
 
+  const mark_valueS = form.get("mark_value");
+  const mark_value = Number(mark_valueS);
+  const mark_teacher_id = form.get("m_teacher_id");
+  const mark_student_id = form.get("m_student_id");
+  const mark_lesson_id = form.get("m_lesson_id");
+  console.log("before", mark_value, typeof mark_teacher_id, typeof mark_student_id,typeof mark_lesson_id  );
 
-  // const teacherId = await getUserId(request);
-  // if (!teacherId) return null;
-  // const form = await request.formData();
-  // const intent = form.get("intent");
+  if (
+    typeof mark_teacher_id !== "string" ||
+    typeof mark_student_id !== "string" ||
+    typeof mark_lesson_id !== "string"
+  )
+    return json({error: 'invalid formData'}, {status: 400});
 
-  // if (intent === 'createMark'){
-  //   const mark_valueS = form.get("mark_value");
-  //   const mark_value = Number(mark_valueS);
-  //   const m_teacher_id = form.get("m_teacher_id");
-  //   const m_student_id = form.get("m_student_id");
-  //   const m_lesson_id = form.get("m_lesson_id");
+    console.log(mark_value)
 
-  //   await tCreateMark(mark_value, m_teacher_id, m_student_id, m_lesson_id);
-  // }
-
+  await tCreateMark(mark_value, mark_teacher_id, mark_student_id, mark_lesson_id);
 };
 
 export default function SchoolDiary() {
-  const loaderData = useLoaderData()
-  // need refactor 
+  const loaderData = useLoaderData();
+  // console.log(1111111, loaderData);
+  // need refactor
 
-  const period: string = loaderData?.period || null
-  const lessons: ILessonWithMarks[] = loaderData?.lessons || null
-  const classWithStudents: IClassroomWithStudents = loaderData?.classWithStudents || null
+  const period: string = loaderData?.period || null;
+  const lessons: ILessonWithMarks[] = loaderData?.lessons || null;
+  const classWithStudents: IClassroomWithStudents =
+    loaderData?.classWithStudents || null;
 
   const daysInMonth = getDaysInMonth(period);
   const { allClasses } = useRouteLoaderData("routes/home");
 
   return (
     <div className="p-4">
-      <SchoolDiaryToolbar classes={allClasses}/>
+      <SchoolDiaryToolbar classes={allClasses} />
       {/* <div className="bg-white p-3">
         <b>Lessons</b>
         {lessons && lessons.length > 0 && (
@@ -99,11 +105,15 @@ export default function SchoolDiary() {
           </ul>
         )}
       </div> */}
-      {loaderData ? <DymanicTable
-        columnCount={daysInMonth || 0}
-        classWithStudents={classWithStudents}
-        lessons={lessons}
-      /> : <div>Table skeleton</div>}
+      {loaderData ? (
+        <DymanicTable
+          columnCount={daysInMonth || 0}
+          classWithStudents={classWithStudents}
+          lessons={lessons}
+        />
+      ) : (
+        <div>Table skeleton</div>
+      )}
     </div>
   );
 }

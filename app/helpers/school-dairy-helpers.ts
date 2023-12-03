@@ -41,5 +41,5 @@ export const findMarkOfLessonDateAndStudentId = (
   if (lesson?.marks.length < 0) return;
   const mark = lesson?.marks.find((e) => e.studentId === studentID);
   if (!mark) return;
-  return mark.value;
+  return {value: mark.value, id: mark.id};
 };

@@ -1,65 +1,114 @@
-import { LoaderFunction, json } from "@remix-run/node";
-import { useRouteLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import { ActionFunction, LoaderFunction, json } from "@remix-run/node";
+import {
+  useActionData,
+  useLoaderData,
+  useRouteLoaderData,
+} from "@remix-run/react";
+import { useEffect, useState } from "react";
 import { Calendar } from "~/components/Calendar";
 import { DropdownMenu } from "~/components/dropDownMenu";
-import { SchoolDiaryToolbar } from "~/components/schoolDiaryToolbar";
 import { formOptionsFromArray } from "~/helpers/formHelpers";
-import { getFullMonthStartEndDays } from "~/helpers/timeConvertor";
-import { getClassWithStudents } from "~/utils/classroom.server";
-import {
-  getAllLessonsByPeriodAndClass,
-  getLessonsByPeriodAndClass,
-} from "~/utils/lessons.server";
+import { getUserIdAndRole } from "~/utils/auth.server";
+import { createLesson } from "~/utils/lessons.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // const userId = await getUserId(request);
-  // if (!userId) {
-  //   return null;
-  //   // status 401
-  // }
-  const url = new URL(request.url);
-  const classroom = url.searchParams.get("class");
-  const period = url.searchParams.get("period");
+  // todo - ts errors
+  const { userId, userRole } = await getUserIdAndRole(request);
+  if (!userId)
+    throw new Response("Unathorized", {
+      status: 401,
+    });
+  return { userId, userRole };
+};
 
-  if (classroom && period) {
-    const { firstDay, lastDay } = getFullMonthStartEndDays(period);
-    // todo - only lessons of teacherID
-    const lessons = await getAllLessonsByPeriodAndClass(
-      classroom,
-      firstDay,
-      lastDay
-    );
-    const classWithStudents = await getClassWithStudents("8-Б");
+export const action: ActionFunction = async ({ request }) => {
+  const form = await request.formData();
+  const obj = Object.fromEntries(form.entries());
+  // todo - response error
+  if (!obj) return;
+  const {
+    lesson_type,
+    lesson_topic,
+    lesson_description,
+    lesson_location,
+    start_time,
+    end_time,
+    teacher_id,
+    class_id,
+  } = obj;
+  if (
+    !lesson_type ||
+    !lesson_topic ||
+    !start_time ||
+    !end_time ||
+    !teacher_id ||
+    !class_id
+  )
+    return json({ error: "Required fields are missing" }, { status: 400 });
 
-    console.log(111, lessons);
+  // todo error handling
 
-    return json({ period, lessons, classWithStudents });
-  }
+  if (
+    typeof lesson_type !== "string" ||
+    typeof lesson_topic !== "string" ||
+    typeof lesson_description !== "string" ||
+    typeof lesson_location !== "string" ||
+    typeof start_time !== "string" ||
+    typeof end_time !== "string" ||
+    typeof teacher_id !== "string" ||
+    typeof class_id !== "string"
+  )
+    return json({ error: "Invalid Form Data" }, { status: 400 });
+  // todo - ts error
 
-  return json({ period: "", lessons: [], classWithStudents: {} });
+  // lesson_type as $Enums.LessonType
+
+  return await createLesson({
+    type: lesson_type,
+    topic: lesson_topic,
+    description: lesson_description,
+    startTime: start_time,
+    endTime: end_time,
+    teacherId: teacher_id,
+    classroomId: class_id,
+  });
 };
 export default function Schedule() {
-  const { allClasses } = useRouteLoaderData("routes/home");
+  const { userId, userRole } = useLoaderData();
+  const { allClasses, user } = useRouteLoaderData("routes/home");
   const [selectedClass, setSelectedClass] = useState();
+  const actionData = useActionData();
+
+  useEffect(() => {
+    if (userRole === "teacher") return;
+    setSelectedClass(user?.classroomId);
+  }, []);
 
   return (
     <div>
       <h1>Schedule</h1>
-      <DropdownMenu
-        hasEmptyOption={true}
-        emptyOptionTitle="---"
-        options={formOptionsFromArray(allClasses)}
-        label="Оберіть класс"
-        name="class"
-        inputValue={selectedClass}
-        onInputChange={(e) => {
-          setSelectedClass(e.target.value);
-        }}
-        controlled={true}
-      />
+      {userRole === "teacher" && (
+        <DropdownMenu
+          hasEmptyOption={true}
+          emptyOptionTitle="---"
+          options={formOptionsFromArray(allClasses, "id", "name")}
+          label="Оберіть клас"
+          name="class"
+          inputValue={selectedClass}
+          onInputChange={(e) => {
+            setSelectedClass(e.target.value);
+          }}
+          controlled={true}
+        />
+      )}
       <div className="bg-white">
-        <Calendar selectedClass={selectedClass} />
+        <Calendar
+          userRole={userRole}
+          selectedClass={selectedClass}
+          teacherId={userId}
+          actionData={actionData}
+          profile={user?.profile}
+        />
       </div>
     </div>
   );

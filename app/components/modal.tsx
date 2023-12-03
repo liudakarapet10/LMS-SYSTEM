@@ -25,7 +25,6 @@ export const Modal: React.FC<props> = ({ children, isOpenModal, ariaLabel, class
 
   return (
     <Portal wrapperId="modal" >
-      
       <div
         className="fixed inset-0 overflow-y-auto bg-gray-600 bg-opacity-80"
         aria-labelledby={ariaLabel ?? 'modal-title'}

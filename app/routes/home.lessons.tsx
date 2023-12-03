@@ -1,74 +1,97 @@
-import type {
-  ActionFunction,
-  LoaderFunction,
-} from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
-import { getUserId} from "~/utils/auth.server";
 import {
-  createLessonByTeacher,
-  getAllLessonsByTeacherId,
-} from "~/utils/teacher.server";
+  json,
+  type LoaderFunction,
+} from "@remix-run/node";
+import { useLoaderData, useRouteLoaderData } from "@remix-run/react";
+import { Fragment } from "react";
+import ClassroomSession from "~/components/ClassroomSession";
+import { SchoolLessonsToolbar } from "~/components/schoolLessonsToolBar";
+import { getFullMonthStartEndDays } from "~/helpers/timeConvertor";
+import { Lessons } from "~/types/project.types";
+import { getUserId} from "~/utils/auth.server";;
+import { getLessonsByParameters } from "~/utils/lessons.server";
+
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const teacherId = await getUserId(request);
-  if (!teacherId) return null;
-
-  const allLessonsById = await getAllLessonsByTeacherId(teacherId);
-  return allLessonsById;
-};
-export const action: ActionFunction = async ({ request }) => {
-  const teacherId = await getUserId(request);
-  if (!teacherId) return null;
-
-  const form = await request.formData();
-
-  const name = form.get("name");
-  const time = form.get("time");
-  const location = form.get("location");
-  if (
-    typeof name !== "string" ||
-    typeof time !== "string" ||
-    typeof location !== "string" ||
-    typeof teacherId !== "string"
-  ) {
+  const userId = await getUserId(request);
+  if (!userId) {
     return null;
   }
+  const url = new URL(request.url);
+  const classroom = url.searchParams.get("class");
+  const period = url.searchParams.get("period");
+  const lessonType = url.searchParams.get("lesson_type");
 
-  return await createLessonByTeacher(teacherId, name, time, location);
+  if (classroom && period && lessonType) {
+    const { firstDay, lastDay } = getFullMonthStartEndDays(period);
+    const lessons = await getLessonsByParameters(
+      classroom,
+      {
+        firstDay,
+        lastDay,
+      },
+      userId,
+      lessonType
+    );
+
+    return json({ period, lessons});
+  }
+
+  return null;
+
 };
 
 export default function Lessons() {
-  const data = useLoaderData();
+  const loaderData = useLoaderData();
+  const lessons: Lessons[] = loaderData?.lessons || null;
+  
+  const { allClasses } = useRouteLoaderData("routes/home");
+
+  let sortedLessons;
+
+  if( lessons && lessons.length > 1){
+    sortedLessons = lessons.slice().sort((a, b) => {
+      const startTimeA = new Date(a.startTime);
+      const startTimeB = new Date(b.startTime);
+
+      if (startTimeA < startTimeB) {
+        return -1;
+      } else if (startTimeA > startTimeB) {
+        return 1;
+      }
+
+      return 0;
+    });
+  } else {
+    sortedLessons = lessons;
+  }
+
 
   return (
-    <div>
-      diary
-      {data.length > 0 && (
-        <ul>
-          {data.map((e) => (
-            <li key={e.id}>
-              {e.name} - {e.time} - {e.location}
-            </li>
+    <Fragment>
+     <SchoolLessonsToolbar classes={allClasses} />
+     {loaderData ? (
+        <div>
+          {sortedLessons.map((el, index) => (
+              <ClassroomSession
+              key={el.id}
+              index={index + 1}
+              type={el.type}
+              startDate={el.startTime.substring(0, 10)}
+              endDate={el.endTime.substring(0, 10)}
+              startTime={el.startTime.substring(11, 16)}
+              endTime={el.endTime.substring(11, 16)}
+              location={el.location}
+              topic={el.topic}
+              description={el.description}
+            />
           ))}
-        </ul>
+        </div>  
+      ) : (
+        <div>
+          <h1>Оберіть параметри</h1>
+        </div>
       )}
-      <Form method="post">
-        <label>
-          Name(MATH)
-          <input type="text" name="name" className="border" />
-        </label>
-
-        <label>
-          Time
-          <input type="text" name="time" className="border" />
-        </label>
-
-        <label>
-          Class
-          <input type="text" name="classroom" className="border" />
-        </label>
-        <button>Submit</button>
-      </Form>
-    </div>
+    </Fragment>
   );
 }

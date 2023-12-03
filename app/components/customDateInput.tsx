@@ -9,6 +9,7 @@ import { useId } from "react";
 //    options: Option[];
    label?: string;
    name: string;
+   ref?:  React.RefObject<HTMLInputElement>;
 //    hasEmptyOption?: boolean
 //    emptyOptionTitle?: string
  }

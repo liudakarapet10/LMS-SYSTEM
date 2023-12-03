@@ -29,15 +29,15 @@ export const tCreateStudent = async (
 
 export const tCreateLesson = async (
   lesson_name: string,
-  Lesson_room: string,
+  classroomId: string,
   teacher_id: string,
   lesson_start: string,
   lesson_end: string
 ) => {
   return await db.lesson.create({
     data: {
-      name: lesson_name,
-      classroom: Lesson_room,
+      title: lesson_name,
+      type: 'Math',
       startTime: lesson_start,
       endTime: lesson_end,
       teacher: {
@@ -45,6 +45,11 @@ export const tCreateLesson = async (
           id: teacher_id,
         },
       },
+      classroom: {
+        connect: {
+          id: classroomId,
+        },
+      }
     },
   });
 };

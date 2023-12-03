@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 interface FormFieldProps {
   htmlFor: string;
   label: string;
+  ariaLabel: string;
+  ariaRequired: boolean;
   type?: string;
   value: any;
   onChange?: (...args: any) => any;
@@ -12,6 +14,8 @@ interface FormFieldProps {
 export function FormField({
   htmlFor,
   label,
+  ariaLabel,
+  ariaRequired,
   type = "text",
   value,
   onChange = () => {},
@@ -29,7 +33,7 @@ export function FormField({
       <input onChange={e => {
             onChange(e)
             setErrorText('')
-        }} type={type} id={htmlFor} name={htmlFor} className="w-full p-2 rounded-xl my-2" value={value} />
+        }} aria-label={ariaLabel} aria-required={ariaRequired} type={type} id={htmlFor} name={htmlFor} className="w-full p-2 rounded-xl my-2" value={value} />
         <div className="text-xs font-semibold text-center tracking-wide text-red-500 w-full">
             {errorText || ''}
         </div>

@@ -1,6 +1,6 @@
 import { db } from "./db.server";
 
-export const tCreateMark = async (
+export const tCreateMark1 = async (
     mark_value: number,
     m_teacher_id: string,
     m_student_id: string,
@@ -26,4 +26,23 @@ export const tCreateMark = async (
         },
       },
     });
+  };
+
+  export const tUpdateMark = async (
+    id: string,  // як отримати цей id
+    mark_value: number
+  ) => {
+    return await db.mark.update({
+      where: {
+        id,
+      },
+      data: {
+        value: mark_value
+      },
+    });
+  };
+
+
+  export const deleteMarkById = async (id: string) => {
+    return await db.mark.delete({ where: { id } });
   };

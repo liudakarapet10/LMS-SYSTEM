@@ -1,18 +1,19 @@
 import { prisma as db } from "./prisma.server";
-
+import type { Lesson as ILesson } from "@prisma/client";
 // for certain teacher
 export const getLessonsByPeriodAndClass = async (
-  classroom: string,
-  { firstDay, lastDay }: { firstDay: string; lastDay: string }
+  classroomId: string,
+  { firstDay, lastDay }: { firstDay: string; lastDay: string },
+  type: string
 ) => {
   return await db.lesson.findMany({
     where: {
-      classroom,
+      classroomId,
       startTime: {
         gte: firstDay,
         lte: lastDay,
       },
-      // if teacheer is owner
+      type,
     },
     include: {
       marks: {
@@ -23,43 +24,58 @@ export const getLessonsByPeriodAndClass = async (
     },
   });
 };
-// for all lessons by period
 
-// export const getAllLessonsByPeriodAndClass = async (
-//   classroom: string,
-//   { firstDay, lastDay }: { firstDay: string; lastDay: string }
-// ) => {
-//   return await db.lesson.findMany({
-//     where: {
-//       classroom,
-//       startTime: {
-//         gte: firstDay,
-//         lte: lastDay,
-//       },
-//     },
-//   });
-// };
+export const createLesson = async ({
+  type,
+  topic,
+  description,
+  startTime,
+  endTime,
+  teacherId,
+  classroomId,
+}: Omit<ILesson, "id">) => {
+  return await db.lesson.create({
+    data: {
+      type,
+      topic,
+      description,
+      startTime,
+      endTime,
+      teacher: {
+        connect: {
+          id: teacherId,
+        },
+      },
+      classroom: {
+        connect: {
+          id: classroomId,
+        },
+      },
+    },
+  });
+};
 
 // CALENDAR SERVICE ROUTES
 export const getAllLessonsByPeriodAndClass = async (
-  classroom: string,
+  classId: string,
   start: string,
   end: string
 ) => {
   return await db.lesson.findMany({
     where: {
-      classroom,
       startTime: {
         gte: start,
         lte: end,
       },
+      classroomId: classId,
     },
     select: {
       id: true,
       startTime: true,
       endTime: true,
       classroom: true,
-      title: true,
+      type: true,
+      topic: true,
       location: true,
       teacher: {
         select: {
@@ -67,6 +83,68 @@ export const getAllLessonsByPeriodAndClass = async (
           profile: true,
         },
       },
+    },
+  });
+};
+
+export const simpleUpdateLessonByCP = async (
+  lessonId: string,
+  newStart: string,
+  newEnd: string
+) => {
+  return await db.lesson.update({
+    data: {
+      startTime: newStart,
+      endTime: newEnd,
+    },
+    where: {
+      id: lessonId,
+    },
+  });
+};
+
+export const deleteLessonById = async (lessonId: string) => {
+  await db.lesson.delete({
+    where: {
+      id: lessonId,
+    },
+  });
+  return;
+};
+
+export const getLessonsByPeriodAndClassAndTeacherId = async (
+  classroomId: string,
+  { firstDay, lastDay }: { firstDay: string; lastDay: string },
+  teacherId: string
+) => {
+  return await db.lesson.findMany({
+    where: {
+      classroomId,
+      startTime: {
+        gte: firstDay,
+        lte: lastDay,
+      },
+      teacherId,
+    },
+  });
+};
+
+
+export const getLessonsByParameters = async (
+  classroomId: string,
+  { firstDay, lastDay }: { firstDay: string; lastDay: string },
+  teacherId: string,
+  type: string 
+) => {
+  return await db.lesson.findMany({
+    where: {
+      classroomId,
+      startTime: {
+        gte: firstDay,
+        lte: lastDay,
+      },
+      teacherId,
+      type,
     },
   });
 };

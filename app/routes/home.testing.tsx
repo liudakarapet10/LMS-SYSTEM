@@ -43,7 +43,7 @@ export const action: ActionFunction = async ({ request }) => {
     await tCreateStudent(student_name, student_surname, classroom_id);
   } else if (intent === "createLesson") {
     const lesson_name = form.get("lesson_name");
-    const Lesson_room = form.get("Lesson_room");
+    const classroomId = form.get("Lesson_room");
     const teacher_id = form.get("teacher_id");
     const lesson_start1 = form.get("lesson_start");
     const lesson_end1 = form.get("lesson_end");
@@ -54,7 +54,7 @@ export const action: ActionFunction = async ({ request }) => {
 
     await tCreateLesson(
       lesson_name,
-      Lesson_room,
+      classroomId,
       teacher_id,
       lesson_start,
       lesson_end

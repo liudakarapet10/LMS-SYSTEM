@@ -1,4 +1,8 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#modal {
+  position: fixed;
+  z-index: 999;
+}

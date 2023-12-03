@@ -6,7 +6,7 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, useRouteLoaderData } from "@remix-run/react";
 import { getClassWithStudents } from "~/utils/classroom.server";
-import { getUserId } from "~/utils/auth.server";
+import { getUserIdAndRole } from "~/utils/auth.server";
 import { getLessonsByPeriodAndClass } from "~/utils/lessons.server";
 import {
   getDaysInMonth,
@@ -18,26 +18,48 @@ import type {
   IClassroomWithStudents,
   ILessonWithMarks,
 } from "~/types/project.types";
-import { tCreateMark } from "~/utils/marks.server";
+import {
+  deleteMarkById,
+  tCreateMark1,
+  tUpdateMark,
+} from "~/utils/marks.server";
+import { Fragment } from "react";
+import { getUserByIdAndRole } from "~/utils/user.server";
+import { Student } from "@prisma/client";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const userId = await getUserId(request);
-  if (!userId) {
-    return null;
-    // status 401
-  }
-  const url = new URL(request.url);
-  const classroom = url.searchParams.get("class");
-  const period = url.searchParams.get("period");
+  // todo ts error
+  const { userId, userRole } = await getUserIdAndRole(request);
+  if (!userId)
+    throw new Response("Unathorized", {
+      status: 401,
+    });
 
-  if (classroom && period) {
+  let classroom;
+
+  const url = new URL(request.url);
+
+  if (userRole === "student") {
+    const user = await getUserByIdAndRole(userId, userRole);
+    const { classroomId } = user as Student;
+    classroom = classroomId;
+  } else {
+    classroom = url.searchParams.get("class");
+  }
+
+  const period = url.searchParams.get("period");
+  const lessonType = url.searchParams.get("lesson_type");
+
+
+  if (classroom && period && lessonType) {
     const { firstDay, lastDay } = getFullMonthStartEndDays(period);
     const lessons = await getLessonsByPeriodAndClass(classroom, {
       firstDay,
       lastDay,
-    });
-    const classWithStudents = await getClassWithStudents("5-B");
+    }, lessonType);
+    // todo -refactor && populate
 
+    const classWithStudents = await getClassWithStudents(classroom); 
     return json({ period, lessons, classWithStudents });
   }
 
@@ -46,74 +68,114 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
+  const intent = form.get("intent");
 
-  const mark_valueS = form.get("mark_value");
-  const mark_value = Number(mark_valueS);
-  const mark_teacher_id = form.get("m_teacher_id");
-  const mark_student_id = form.get("m_student_id");
-  const mark_lesson_id = form.get("m_lesson_id");
-  console.log("before", mark_value, typeof mark_teacher_id, typeof mark_student_id,typeof mark_lesson_id  );
+  if (intent === "createMark") {
+    const mark_valueS = form.get("mark_value");
+    const mark_value = Number(mark_valueS);
+    const mark_teacher_id = form.get("m_teacher_id");
+    const mark_student_id = form.get("m_student_id");
+    const mark_lesson_id = form.get("m_lesson_id");
 
-  if (
-    typeof mark_teacher_id !== "string" ||
-    typeof mark_student_id !== "string" ||
-    typeof mark_lesson_id !== "string"
-  )
-    return json({error: 'invalid formData'}, {status: 400});
+    if (
+      !mark_teacher_id ||
+      typeof mark_teacher_id !== "string" ||
+      !mark_student_id ||
+      typeof mark_student_id !== "string" ||
+      !mark_lesson_id ||
+      typeof mark_lesson_id !== "string"
+    ) {
+      return json({ error: "Invalid formData" }, { status: 400 });
+    }
 
-    console.log(mark_value)
+    return await tCreateMark1(
+      mark_value,
+      mark_teacher_id,
+      mark_student_id,
+      mark_lesson_id
+    );
+  } else if (intent === "updateMark") {
+    const mark_valueS = form.get("mark_value");
+    const mark_value = Number(mark_valueS);
+    const mark_id = form.get("m_mark_id");
 
-  await tCreateMark(mark_value, mark_teacher_id, mark_student_id, mark_lesson_id);
+    if (!mark_id || typeof mark_id !== "string") {
+      return json({ error: "Invalid formData" }, { status: 400 });
+    }
+
+    return await tUpdateMark(mark_id, mark_value);
+  } else if (intent === "deleteMark") {
+    const mark_id = form.get("m_mark_id");
+
+    if (!mark_id || typeof mark_id !== "string") {
+      return json({ error: "Invalid formData" }, { status: 400 });
+    }
+    return await deleteMarkById(mark_id);
+  }
 };
 
 export default function SchoolDiary() {
   const loaderData = useLoaderData();
-  // console.log(1111111, loaderData);
-  // need refactor
-
+  const { user, allClasses } = useRouteLoaderData("routes/home");
   const period: string = loaderData?.period || null;
   const lessons: ILessonWithMarks[] = loaderData?.lessons || null;
   const classWithStudents: IClassroomWithStudents =
     loaderData?.classWithStudents || null;
 
   const daysInMonth = getDaysInMonth(period);
-  const { allClasses } = useRouteLoaderData("routes/home");
+
+  const columnsDefault = Array.from({ length: 30 }, (_, index) => index + 1);
+
+
 
   return (
-    <div className="p-4">
-      <SchoolDiaryToolbar classes={allClasses} />
-      {/* <div className="bg-white p-3">
-        <b>Lessons</b>
-        {lessons && lessons.length > 0 && (
-          <ul>
-            {lessons.map((e) => (
-              <li key={e.id}>
-                {e.name}--{e.startTime}--{e.classroom}
-              </li>
-            ))}
-          </ul>
+    <Fragment>
+      <div className="p-4">
+        <SchoolDiaryToolbar classes={allClasses} userType={user.type} />
+
+        {loaderData ? (
+          <DymanicTable
+            columnCount={daysInMonth || 0}
+            classWithStudents={classWithStudents}
+            lessons={lessons}
+            userType={user.type}
+          />
+        ) : (
+          <div>
+            <div className="rounded-b-lg">
+              <table className="w-full border-collapse border bg-white">
+                <thead>
+                  <tr className="border">
+                    <th className="border">Учні</th>
+                    {columnsDefault.map((header, index) => (
+                      <th key={index} className="border min-w-[25px]">
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border">
+                    <th>tevcdkwc edcudichce</th>
+                  </tr>
+                  <tr className="border">
+                    <th>tevcdkwc edcudichce</th>
+                  </tr>
+                  <tr className="border">
+                    <th>tevcdkwc edcudichce</th>
+                  </tr>
+                  <tr className="border">
+                    <th>tevcdkwc edcudichce</th>
+                  </tr>
+                  <tr className="border">
+                    <th>tevcdkwc edcudichce</th>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
-        <b>Class with students</b>
-        {classWithStudents && <p>{classWithStudents.name}</p>}
-        {classWithStudents && classWithStudents?.students?.length > 0 && (
-          <ul>
-            {classWithStudents.students.map((e) => (
-              <li key={e.id}>
-                {e.profile.firstName}--{e.profile.lastName}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div> */}
-      {loaderData ? (
-        <DymanicTable
-          columnCount={daysInMonth || 0}
-          classWithStudents={classWithStudents}
-          lessons={lessons}
-        />
-      ) : (
-        <div>Table skeleton</div>
-      )}
-    </div>
+      </div>
+    </Fragment>
   );
 }

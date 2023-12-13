@@ -35,7 +35,7 @@ export function SchoolLessonsToolbar({ classes}: ISchoolToolbar) {
       className="flex flex-row gap-3 outline bg-slate-100 p-4 rounded-t-lg"
       tabIndex={0}
     >
-      <Form className="flex space-x-4">
+      <Form className="flex space-x-4 flex-wrap gap-2">
         <DropdownMenu
           hasEmptyOption={true}
           emptyOptionTitle="---"

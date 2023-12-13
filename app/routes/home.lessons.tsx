@@ -2,15 +2,14 @@ import {
   json,
   type LoaderFunction,
 } from "@remix-run/node";
-import { useLoaderData, useRouteLoaderData } from "@remix-run/react";
-import { Fragment } from "react";
+import { Form, useLoaderData, useRouteLoaderData } from "@remix-run/react";
+import { useEffect, Fragment } from "react";
 import ClassroomSession from "~/components/ClassroomSession";
 import { SchoolLessonsToolbar } from "~/components/schoolLessonsToolBar";
-import { getFullMonthStartEndDays } from "~/helpers/timeConvertor";
+import { getDaysInMonth, getFullMonthStartEndDays } from "~/helpers/timeConvertor";
 import { Lessons } from "~/types/project.types";
 import { getUserId} from "~/utils/auth.server";;
 import { getLessonsByParameters } from "~/utils/lessons.server";
-
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -42,7 +41,16 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Lessons() {
+  useEffect(() => {
+    document.title = 'Предмети';
+  });
+
   const loaderData = useLoaderData();
+
+  const period: string = loaderData?.period || null;
+  const daysInMonth = getDaysInMonth(period);
+
+
   const lessons: Lessons[] = loaderData?.lessons || null;
   
   const { allClasses } = useRouteLoaderData("routes/home");
@@ -69,6 +77,10 @@ export default function Lessons() {
 
   return (
     <Fragment>
+      <h1 className="mb-8 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+        Предмети
+      </h1>
+
      <SchoolLessonsToolbar classes={allClasses} />
      {loaderData ? (
         <div>

@@ -9,9 +9,7 @@ export function UserInfo({ profile}: props) {
     <div
       className="flex justify-center items-center"
     >
-      <h2>
-         {profile.firstName} {profile.lastName}
-      </h2>
+      {profile.firstName} {profile.lastName}
     </div>
   )
 }

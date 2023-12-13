@@ -1,6 +1,7 @@
-import { useId, useRef } from "react";
+import React from "react";
+import { useId } from "react";
 
-export interface Option {
+interface Option {
   value: string;
   label: string;
 }
@@ -13,60 +14,53 @@ interface DropdownMenuProps {
   emptyOptionTitle?: string;
   required?: boolean;
   controlled?: boolean;
-  // for uncontrolled input
   defaultValue?: string;
-  // for controlled Input
   inputValue?: string | number;
-  onInputChange?: (e: any) => void;
-  dropdownRef?:  React.RefObject<HTMLDivElement>;
+  ariaLabel: string;
+  ariaRequired: boolean
+  onInputChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
-export const DropdownMenu = ({
+export const DropdownMenu: React.FC<DropdownMenuProps> = ({
   options = [],
   label,
   name,
   hasEmptyOption = false,
-  emptyOptionTitle = "Please select",
-  controlled = false,
+  emptyOptionTitle = "Будь ласка оберіть",
   required = false,
+  controlled = false,
   defaultValue,
   inputValue,
   onInputChange,
-  dropdownRef
+  ariaLabel,
+  ariaRequired
 }: DropdownMenuProps) => {
   const id = useId();
+
   return (
-    <div className="flex" >
-      <label className="h-full flex flex-col justify-center pr-2" htmlFor={id}>
-        {required && "*"}
+    <div className="flex flex-col">
+      <label className="text-black font-extrabold" htmlFor={id}>
+        {required && <span className="text-black-500 mr-1">*</span>}
         {label}
       </label>
-      {/* todo - need refactor */}
-      {controlled ? (
-        <select
-          name={name}
-          id={id}
-          value={inputValue}
-          onChange={onInputChange}
-          required={required}
-        >
-          {hasEmptyOption && <option value="">{emptyOptionTitle}</option>}
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <select name={name} id={id} required={required}>
-          {hasEmptyOption && <option value="">{emptyOptionTitle}</option>}
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      )}
+
+      <select
+        name={name}
+        id={id}
+        value={inputValue}
+        onChange={onInputChange}
+        required={required}
+        className="w-full p-2 rounded-xl my-2"
+        aria-label={ariaLabel}
+        aria-required={ariaRequired}
+      >
+        {hasEmptyOption && <option value="">{emptyOptionTitle}</option>}
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };

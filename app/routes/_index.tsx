@@ -3,5 +3,5 @@ import { requireUserIdAndRole } from "~/utils/auth.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUserIdAndRole(request);
-  return redirect("/home");
+  return redirect("/home/school-diary");
 };

@@ -1,34 +1,18 @@
 import { SchoolDiaryToolbar } from "~/components/schoolDiaryToolbar";
-import {
-  json,
-  type ActionFunction,
-  type LoaderFunction,
-} from "@remix-run/node";
+import { json, type ActionFunction, type LoaderFunction } from "@remix-run/node";
 import { useLoaderData, useRouteLoaderData } from "@remix-run/react";
 import { getClassWithStudents } from "~/utils/classroom.server";
 import { getUserIdAndRole } from "~/utils/auth.server";
 import { getLessonsByPeriodAndClass } from "~/utils/lessons.server";
-import {
-  getDaysInMonth,
-  getFullMonthStartEndDays,
-} from "~/helpers/timeConvertor";
+import { getDaysInMonth, getFullMonthStartEndDays } from "~/helpers/timeConvertor";
 import DymanicTable from "~/components/DynamicTable";
-
-import type {
-  IClassroomWithStudents,
-  ILessonWithMarks,
-} from "~/types/project.types";
-import {
-  deleteMarkById,
-  tCreateMark1,
-  tUpdateMark,
-} from "~/utils/marks.server";
-import { Fragment } from "react";
+import type { IClassroomWithStudents, ILessonWithMarks } from "~/types/project.types";
+import { deleteMarkById, tCreateMark1, tUpdateMark } from "~/utils/marks.server";
+import { useEffect, Fragment } from "react";
 import { getUserByIdAndRole } from "~/utils/user.server";
 import { Student } from "@prisma/client";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // todo ts error
   const { userId, userRole } = await getUserIdAndRole(request);
   if (!userId)
     throw new Response("Unathorized", {
@@ -57,7 +41,6 @@ export const loader: LoaderFunction = async ({ request }) => {
       firstDay,
       lastDay,
     }, lessonType);
-    // todo -refactor && populate
 
     const classWithStudents = await getClassWithStudents(classroom); 
     return json({ period, lessons, classWithStudents });
@@ -115,6 +98,10 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function SchoolDiary() {
+  useEffect(() => {
+    document.title = 'Щоденник';
+  });
+
   const loaderData = useLoaderData();
   const { user, allClasses } = useRouteLoaderData("routes/home");
   const period: string = loaderData?.period || null;
@@ -130,7 +117,11 @@ export default function SchoolDiary() {
 
   return (
     <Fragment>
-      <div className="p-4">
+      <div>
+        <h1 className="mb-8 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+          Щоденник
+        </h1>
+
         <SchoolDiaryToolbar classes={allClasses} userType={user.type} />
 
         {loaderData ? (
@@ -141,7 +132,7 @@ export default function SchoolDiary() {
             userType={user.type}
           />
         ) : (
-          <div>
+          <div className="w-full overflow-x-scroll" id="pseudo_table">
             <div className="rounded-b-lg">
               <table className="w-full border-collapse border bg-white">
                 <thead>
@@ -156,19 +147,13 @@ export default function SchoolDiary() {
                 </thead>
                 <tbody>
                   <tr className="border">
-                    <th>tevcdkwc edcudichce</th>
+                    <th> Оксана Коваленко</th>
                   </tr>
                   <tr className="border">
-                    <th>tevcdkwc edcudichce</th>
+                    <th>Віталій Шевченко</th>
                   </tr>
                   <tr className="border">
-                    <th>tevcdkwc edcudichce</th>
-                  </tr>
-                  <tr className="border">
-                    <th>tevcdkwc edcudichce</th>
-                  </tr>
-                  <tr className="border">
-                    <th>tevcdkwc edcudichce</th>
+                    <th>Надія Коваленко</th>
                   </tr>
                 </tbody>
               </table>

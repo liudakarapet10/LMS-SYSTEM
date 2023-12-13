@@ -11,6 +11,7 @@ import {
   tCreateMark,
   tCreateStudent,
 } from "~/utils/testing.server";
+import { useEffect } from "react";
 
 export const loader: LoaderFunction = async ({ request }) => {
   // const first = await getClassesWithNestedStudents();
@@ -74,17 +75,25 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Testing() {
+  useEffect(() => {
+    document.title = 'Тестова сторінка';
+  });
+
   const data = useLoaderData();
   console.log(data);
   return (
-    <div className=" m-2">
+    <div>
+      <h1 className="mb-8 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+        Тестова сторінка
+      </h1>
+
       <div className="border p-2 my-2 bg-white">
         Test Create Lesson
         <Form method="post">
           <input type="hidden" name="intent" value="createClass" />
           Classname
           <input type="text" name="class_name" className="border" />
-          <button>submit</button>
+          <button type="submit" className="button">submit</button>
         </Form>
       </div>
       <div className="border p-2 my-2 bg-white">
@@ -97,7 +106,7 @@ export default function Testing() {
           <input type="text" name="student_surname" className="border" />
           classroomId
           <input type="text" name="classroom_id" className="border" />
-          <button>submit</button>
+          <button type="submit" className="button">submit</button>
         </Form>
       </div>
 
@@ -115,7 +124,7 @@ export default function Testing() {
           <input type="datetime-local" name="lesson_start" className="border" />
           end
           <input type="datetime-local" name="lesson_end" className="border" />
-          <button>submit</button>
+          <button type="submit" className="button">submit</button>
         </Form>
       </div>
       {/* do we need to connect lesson to class ???? */}
@@ -134,7 +143,7 @@ export default function Testing() {
           <input type="text" name="m_student_id" className="border" />
           LessonId
           <input type="text" name="m_lesson_id" className="border" />
-          <button>submit</button>
+          <button type="submit" className="button">submit</button>
         </Form>
       </div>
     </div>

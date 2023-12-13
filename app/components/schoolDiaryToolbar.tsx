@@ -42,7 +42,7 @@ export function SchoolDiaryToolbar({ classes, userType }: ISchoolToolbar) {
       className="flex flex-row gap-3 outline bg-slate-100 p-4 rounded-t-lg"
       tabIndex={0}
     >
-      <Form className="flex space-x-4">
+      <Form className="flex space-x-4 flex-wrap gap-2">
         {userType === "teacher" && (
           <DropdownMenu
             hasEmptyOption={true}
@@ -62,6 +62,8 @@ export function SchoolDiaryToolbar({ classes, userType }: ISchoolToolbar) {
         emptyOptionTitle="---"
         options={LESSON_TYPES}
         label="Оберіть предмет"
+        ariaLabel="Оберіть предмет"
+        ariaRequired={true}
         name="lesson_type"
         controlled={false}
         required={true}
@@ -79,7 +81,7 @@ export function SchoolDiaryToolbar({ classes, userType }: ISchoolToolbar) {
         <Button
           label="Очистити щоденник"
           type="button"
-          style="secondary"
+          style="primary"
           ariaLabel="Нажати кнопку для очищення щоденника"
           onPress={clearFilters}
         />

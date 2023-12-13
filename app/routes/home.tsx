@@ -6,8 +6,7 @@ import { getUserByIdAndRole } from "~/utils/user.server";
 import { LogoutComponent } from "~/components/logoutComponent";
 import { UserWelcome } from "~/components/user-welcome";
 import { getAllClassrooms } from "~/utils/classroom.server";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
-import { getAllLessonsByTeacherId } from "~/utils/teacher.server";
+import { useEffect } from "react";
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const { userId, userRole } = await requireUserIdAndRole(request);
@@ -17,89 +16,71 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 };
 
 export default function Home() {
+  useEffect(() => {
+    document.title = 'Домашня сторінка';
+  });
+
   const { user, allClasses } = useLoaderData();
-  // console.log(user);
   const navigate = useNavigate();
 
   // KEYBOARD CONTROLS
 
   const links = [
-    {
-      label: "Щоденник",
-      ariaLabel: "Перейти до щоденника",
-      to: "school-diary",
-    },
+    { label: "Щоденник", ariaLabel: "Перейти до щоденника", to: "school-diary"  },
     { label: "Розклад", ariaLabel: "Перейти до розкладу", to: "schedule" },
     { label: "Уроки", ariaLabel: "Перейти до уроків", to: "lessons" },
+    { label: "Тестінг", ariaLabel: "Перейти до тестової сторінки", to: "testing" }
   ];
 
-  const [menuIsSelected, setMenuIsSelected] = useState(true);
+  const generateLinkClassName = (isActive: boolean, isPending: boolean): string => {
+    let className = "nav-link p-3.5 m-[1px] ";
 
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const linkRefs = links.map(() => useRef<HTMLAnchorElement>(null));
+    if (isPending) {
+      className += "pending ";
+    }
 
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "ArrowDown" && selectedIndex < links.length - 1) {
-        e.preventDefault();
-        setSelectedIndex((prevIndex) => prevIndex + 1);
-      } else if (e.key === "ArrowUp" && selectedIndex > 0) {
-        e.preventDefault();
-        setSelectedIndex((prevIndex) => prevIndex - 1);
-      } else if (e.key === "ArrowRight" && selectedIndex === 0) {
-        e.preventDefault();
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        linkRefs[selectedIndex].current?.click();
-      }
-    };
+    if (isActive) {
+      className += "active ";
+    }
 
-    window.addEventListener("keydown", handleKeyPress);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [selectedIndex, navigate]);
-
-  const handleClick = (index: number) => {
-    setSelectedIndex(index);
+    return className;
   };
-
-  // KEYBOARD CONTROLS
 
   return (
     <Layout>
       <div className="h-full flex">
-        <div className="w-1/6 bg-gray-200 flex flex-col">
-          <div className="text-center bg-gray-300 h-20 flex items-center justify-center">
-            type: {user?.type}
-          </div>
-          <div className="text-center bg-gray-300 h-20 flex items-center justify-center">
+        <aside className="w-1/6 bg-gray-200 flex flex-col">
+          <section className="flex items-center justify-center p-2 pb-0 text-center bg-gray-300">
             {user && <UserWelcome key={user.id} profile={user.profile} />}
-          </div>
-          <div className="flex-1 overflow-y-scroll py-4 flex flex-col gap-y-10">
-            <nav className="w-auto px-3.5" aria-label="Main Navigation">
-              <ul className="flex flex-col gap-[10px]">
-                <NavLink className="hover:text-blue-600" to="school-diary">
-                  Щоденник
+          </section>
+
+          <section className="flex items-center justify-center p-2 text-center bg-gray-300">
+            Ви увійшли як {user?.type === 'teacher' ? 'вчитель' : 'учень'}
+          </section>
+
+          <nav className="w-auto flex-1 overflow-y-scroll flex flex-col" aria-label="EduForAll">
+            <ul role="menubar" aria-label="EduForAll" aria-orientation="vertical" className="flex flex-col">
+              {links.map(link => (
+                <NavLink
+                  key={link.to}
+                  className={({ isActive, isPending }) => generateLinkClassName(isActive, isPending)}
+                  to={link.to}
+                  role="menuitem"
+                >
+                  {link.label}
                 </NavLink>
-                <NavLink className="hover:text-blue-600" to="schedule">
-                  Розклад
-                </NavLink>
-                <NavLink className="hover:text-blue-600" to="lessons">
-                  Уроки
-                </NavLink>
-                <NavLink className="hover:text-blue-600" to="testing">
-                  Тестінг
-                </NavLink>
-              </ul>
-            </nav>
-          </div>
-          <LogoutComponent />
-        </div>
-        <div>
+              ))}
+            </ul>
+          </nav>
+
+          <section>
+            <LogoutComponent />
+          </section>
+        </aside>
+
+        <main className="w-5/6 p-4">
           <Outlet />
-        </div>
+        </main>
       </div>
     </Layout>
   );

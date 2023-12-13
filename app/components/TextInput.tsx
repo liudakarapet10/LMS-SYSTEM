@@ -22,24 +22,32 @@ export const TextInput = ({
   const id = useId();
 
   return (
-    <div className="flex py-1 border border-black border-collapse">
-      <label className="h-full flex flex-col justify-center pr-2" htmlFor={id}>
-        {required && "*"}
-        {label}
-      </label>
-      {/* todo - need refactor */}
-      {controlled ? (
-        <input
-          type="text"
-          name={name}
-          id={id}
-          required={required}
-          value={inputValue}
-          onChange={onInputChange}
-        />
-      ) : (
-        <input type="text" name={name} id={id} required={required} />
-      )}
-    </div>
+    <div className="flex flex-col py-2">
+    <label className="text-black mb-1" htmlFor={id}>
+      {required && <span className="text-red-500">*</span>}
+      {label}
+    </label>
+    {controlled ? (
+      <input
+        type="text"
+        name={name}
+        autoComplete={name}
+        id={id}
+        required={required}
+        aria-required={required}
+        value={inputValue}
+        onChange={onInputChange}
+        className="py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300 text-black"
+      />
+    ) : (
+      <input
+        type="text"
+        name={name}
+        id={id}
+        required={required}
+        className="py-2 px-4 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300 text-black"
+      />
+    )}
+  </div>
   );
 };

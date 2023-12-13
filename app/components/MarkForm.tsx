@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form} from "@remix-run/react";
 import { Button } from "./Button";
 import { useId } from "react";
 
@@ -7,6 +7,7 @@ interface IMarkFormProps {
   teacherId?: string;
   studentId?: string;
   lessonId?: string;
+  onCloseModal: () => void;
 }
 
 export const MarkForm = ({
@@ -14,13 +15,19 @@ export const MarkForm = ({
   teacherId,
   studentId,
   lessonId,
+  onCloseModal
 }: IMarkFormProps) => {
   const id = useId();
+ 
+  const handleFormSubmit = async () => {
+    onCloseModal();
+  };
+
   return (
     <div>
       {!markId && (
               <div>
-              <Form method="POST">
+              <Form method="POST" onSubmit={handleFormSubmit}>
                 <input type="hidden" name="intent" value="createMark" />
                 <label htmlFor={id}>Напишіть оцінку від одного до 12</label>
                 <input
@@ -36,7 +43,7 @@ export const MarkForm = ({
                 <input type="hidden" name="m_student_id" value={studentId} />
                 <input type="hidden" name="m_lesson_id" value={lessonId} />
                 <input type="hidden" name="m_mark_id" value={markId} />
-                <Button label="Submit" type="submit" ariaLabel="Додати оцінку" />
+                <Button label="Додати оцінку" type="submit" ariaLabel="Додати оцінку" ariaRequired={true} />
               </Form>
             </div>
       )}
@@ -44,7 +51,7 @@ export const MarkForm = ({
 
       {markId !== "" && (
         <div>
-          <Form method="post">
+          <Form method="post" onSubmit={handleFormSubmit}>
             <input type="hidden" name="intent" value="updateMark" />
             <label htmlFor={id}>Оновіть оцінку</label>
             <input
@@ -57,17 +64,17 @@ export const MarkForm = ({
               id={id}
             />
             <input type="hidden" name="m_mark_id" value={markId} />
-            <Button label="Update" type="submit" ariaLabel="Оновити оцінку" />
+            <Button label="Оновити оцінку" type="submit" ariaLabel="Оновити оцінку" ariaRequired={true} />
           </Form>
         </div>
       )}
 
       {markId !== "" && ( 
         <div>
-          <Form method="post">
+          <Form method="post" onSubmit={handleFormSubmit}>
             <input type="hidden" name="intent" value="deleteMark" />
             <input type="hidden" name="m_mark_id" value={markId} />
-            <Button label="Delete" type="submit" ariaLabel="Видалити оцінку" />
+            <Button label="Видалити оцінку" type="submit" ariaLabel="Видалити оцінку" ariaRequired={true} />
           </Form>
         </div>
       )}

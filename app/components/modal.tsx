@@ -10,18 +10,11 @@ interface props {
 }
 
 export const Modal: React.FC<props> = ({ children, isOpenModal, ariaLabel, className, handleClick }) => {
-  // const navigate = useNavigate();
   
   
   if (!isOpenModal) return null;
  
 
-  // const closeAndRedirect = () => {
-  //   // console.log(url);
-    
-  //   // navigate('/home/');
-  //   // You can also use the `currentURL` variable for further actions, logging, or redirection.
-  // };
 
   return (
     <Portal wrapperId="modal" >
@@ -33,9 +26,8 @@ export const Modal: React.FC<props> = ({ children, isOpenModal, ariaLabel, class
         onClick={handleClick}
       ></div>
       <div className="fixed inset-0 pointer-events-none flex justify-center items-center max-h-screen overflow-scroll">
-
         <div className={`${className} p-4 bg-gray-200 pointer-events-auto max-h-screen md:rounded-xl`}>
-      <button onClick={() => handleClick()}>Close</button>
+          <button type="button" className="button" aria-label='Закрити модальне вікно' aria-required="true" onClick={() => handleClick()}>Закрити</button>
           {children}
         </div>
       </div>

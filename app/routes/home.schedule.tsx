@@ -12,7 +12,6 @@ import { getUserIdAndRole } from "~/utils/auth.server";
 import { createLesson } from "~/utils/lessons.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
-  // todo - ts errors
   const { userId, userRole } = await getUserIdAndRole(request);
   if (!userId)
     throw new Response("Unathorized", {
@@ -24,7 +23,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const form = await request.formData();
   const obj = Object.fromEntries(form.entries());
-  // todo - response error
+
   if (!obj) return;
   const {
     lesson_type,
@@ -73,7 +72,12 @@ export const action: ActionFunction = async ({ request }) => {
     classroomId: class_id,
   });
 };
+
 export default function Schedule() {
+  useEffect(() => {
+    document.title = 'Розклад';
+  });
+
   const { userId, userRole } = useLoaderData();
   const { allClasses, user } = useRouteLoaderData("routes/home");
   const [selectedClass, setSelectedClass] = useState();
@@ -86,13 +90,18 @@ export default function Schedule() {
 
   return (
     <div>
-      <h1>Schedule</h1>
+      <h1 className="mb-8 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl">
+        Розклад
+      </h1>
+
       {userRole === "teacher" && (
         <DropdownMenu
           hasEmptyOption={true}
           emptyOptionTitle="---"
           options={formOptionsFromArray(allClasses, "id", "name")}
           label="Оберіть клас"
+          ariaLabel="Оберіть клас"
+          ariaRequired={true}
           name="class"
           inputValue={selectedClass}
           onInputChange={(e) => {
